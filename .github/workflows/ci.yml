@@ -1,0 +1,416 @@
+name: 🏠 House Purchase Predictor - CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  PYTHON_VERSION: '3.9'
+  STREAMLIT_VERSION: '1.28.0'
+
+jobs:
+  # Job 1: Code Quality & Testing
+  test:
+    name: 🧪 Test & Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov flake8 black isort
+        
+    - name: 🎨 Code formatting check (Black)
+      run: |
+        black --check --diff src/ tests/ app/
+        
+    - name: 📋 Import sorting check (isort)
+      run: |
+        isort --check-only --diff src/ tests/ app/
+        
+    - name: 🔍 Linting (flake8)
+      run: |
+        flake8 src/ tests/ app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 src/ tests/ app/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: 🧪 Run unit tests
+      run: |
+        python -m pytest tests/ -v --cov=src --cov-report=xml --cov-report=html
+        
+    - name: 📊 Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # Job 2: Model Training & Validation
+  train:
+    name: 🤖 Train & Validate Model
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 🚀 Train model (Quick Demo)
+      run: |
+        cd src
+        python quick_demo.py
+        
+    - name: 🚀 Train model (Full Pipeline)
+      run: |
+        cd src
+        python main_pipeline.py
+        
+    - name: 📊 Validate model artifacts
+      run: |
+        echo "Checking model files..."
+        ls -la models/
+        
+        # Check if all required files exist
+        if [ ! -f models/best_model_*.pkl ]; then
+          echo "❌ Model file not found"
+          exit 1
+        fi
+        
+        if [ ! -f models/scaler_*.pkl ]; then
+          echo "❌ Scaler file not found"
+          exit 1
+        fi
+        
+        if [ ! -f models/encoders_*.pkl ]; then
+          echo "❌ Encoders file not found"
+          exit 1
+        fi
+        
+        if [ ! -f models/feature_names_*.json ]; then
+          echo "❌ Feature names file not found"
+          exit 1
+        fi
+        
+        echo "✅ All model artifacts found"
+        
+    - name: 🧪 Test prediction module
+      run: |
+        cd src
+        python -c "
+        from predict import HousePurchasePredictor
+        import pandas as pd
+        from pathlib import Path
+        
+        # Find latest model
+        models_dir = Path('../models')
+        model_files = list(models_dir.glob('best_model_*.pkl'))
+        latest = max(model_files, key=lambda x: x.stat().st_mtime)
+        parts = latest.stem.split('_')
+        timestamp = '_'.join(parts[-2:])
+        
+        # Load predictor
+        predictor = HousePurchasePredictor(
+            model_path=str(latest),
+            scaler_path=str(models_dir / f'scaler_{timestamp}.pkl'),
+            encoders_path=str(models_dir / f'encoders_{timestamp}.pkl'),
+            feature_names_path=str(models_dir / f'feature_names_{timestamp}.json')
+        )
+        
+        # Test prediction
+        test_data = pd.DataFrame({
+            'property_id': [1],
+            'country': ['USA'],
+            'city': ['New York'],
+            'property_type': ['Apartment'],
+            'furnishing_status': ['Fully-Furnished'],
+            'property_size_sqft': [2000],
+            'price': [500000],
+            'constructed_year': [2010],
+            'previous_owners': [2],
+            'rooms': [3],
+            'bathrooms': [2],
+            'garage': [1],
+            'garden': [0],
+            'crime_cases_reported': [0],
+            'legal_cases_on_property': [0],
+            'customer_salary': [100000],
+            'loan_amount': [400000],
+            'loan_tenure_years': [30],
+            'monthly_expenses': [3000],
+            'down_payment': [100000],
+            'emi_to_income_ratio': [0.3],
+            'satisfaction_score': [7],
+            'neighbourhood_rating': [7],
+            'connectivity_score': [7]
+        })
+        
+        # Make prediction
+        result = predictor.predict_with_explanation(test_data)
+        print('✅ Prediction successful!')
+        print(f'Result: {result.iloc[0].to_dict()}')
+        "
+        
+    - name: 📦 Upload model artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: trained-models
+        path: models/
+        retention-days: 30
+
+  # Job 3: Streamlit App Testing
+  test-app:
+    name: 🌐 Test Streamlit App
+    runs-on: ubuntu-latest
+    needs: train
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 📥 Download model artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: trained-models
+        path: models/
+        
+    - name: 🧪 Test Streamlit app syntax
+      run: |
+        python -m py_compile app/streamlit_app.py
+        echo "✅ Streamlit app syntax is valid"
+        
+    - name: 🌐 Test Streamlit app startup
+      run: |
+        # Test if app can start without errors
+        timeout 30s streamlit run app/streamlit_app.py --server.headless true --server.port 8501 &
+        sleep 10
+        
+        # Check if app is running
+        if curl -f http://localhost:8501 > /dev/null 2>&1; then
+          echo "✅ Streamlit app started successfully"
+        else
+          echo "❌ Streamlit app failed to start"
+          exit 1
+        fi
+        
+        # Kill the process
+        pkill -f streamlit
+
+  # Job 4: Security Scan
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit
+        
+    - name: 🔍 Check for known security vulnerabilities
+      run: |
+        safety check --json --output safety-report.json || true
+        cat safety-report.json
+        
+    - name: 🔒 Run Bandit security linter
+      run: |
+        bandit -r src/ app/ -f json -o bandit-report.json || true
+        bandit -r src/ app/ -f txt
+
+  # Job 5: Documentation Check
+  docs:
+    name: 📚 Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install documentation tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install pydocstyle
+        
+    - name: 📝 Check docstring style
+      run: |
+        pydocstyle src/ app/ --convention=google || true
+        
+    - name: 📋 Check README files exist
+      run: |
+        if [ ! -f README.md ]; then
+          echo "❌ Main README.md not found"
+          exit 1
+        fi
+        
+        if [ ! -f app/README.md ]; then
+          echo "❌ App README.md not found"
+          exit 1
+        fi
+        
+        echo "✅ All documentation files found"
+
+  # Job 6: Performance Test
+  performance:
+    name: ⚡ Performance Test
+    runs-on: ubuntu-latest
+    needs: train
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 📥 Download model artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: trained-models
+        path: models/
+        
+    - name: ⚡ Test prediction performance
+      run: |
+        cd src
+        python -c "
+        import time
+        import pandas as pd
+        from predict import HousePurchasePredictor
+        from pathlib import Path
+        
+        # Load predictor
+        models_dir = Path('../models')
+        model_files = list(models_dir.glob('best_model_*.pkl'))
+        latest = max(model_files, key=lambda x: x.stat().st_mtime)
+        parts = latest.stem.split('_')
+        timestamp = '_'.join(parts[-2:])
+        
+        predictor = HousePurchasePredictor(
+            model_path=str(latest),
+            scaler_path=str(models_dir / f'scaler_{timestamp}.pkl'),
+            encoders_path=str(models_dir / f'encoders_{timestamp}.pkl'),
+            feature_names_path=str(models_dir / f'feature_names_{timestamp}.json')
+        )
+        
+        # Create test data
+        test_data = pd.DataFrame({
+            'property_id': [1],
+            'country': ['USA'],
+            'city': ['New York'],
+            'property_type': ['Apartment'],
+            'furnishing_status': ['Fully-Furnished'],
+            'property_size_sqft': [2000],
+            'price': [500000],
+            'constructed_year': [2010],
+            'previous_owners': [2],
+            'rooms': [3],
+            'bathrooms': [2],
+            'garage': [1],
+            'garden': [0],
+            'crime_cases_reported': [0],
+            'legal_cases_on_property': [0],
+            'customer_salary': [100000],
+            'loan_amount': [400000],
+            'loan_tenure_years': [30],
+            'monthly_expenses': [3000],
+            'down_payment': [100000],
+            'emi_to_income_ratio': [0.3],
+            'satisfaction_score': [7],
+            'neighbourhood_rating': [7],
+            'connectivity_score': [7]
+        })
+        
+        # Test prediction speed
+        start_time = time.time()
+        for i in range(100):  # 100 predictions
+            result = predictor.predict(test_data)
+        end_time = time.time()
+        
+        avg_time = (end_time - start_time) / 100
+        print(f'✅ Average prediction time: {avg_time*1000:.2f}ms')
+        
+        if avg_time > 1.0:  # More than 1 second
+          print('⚠️ Warning: Prediction is slower than expected')
+        else:
+          print('✅ Performance is good')
+        "
+
+  # Job 7: Build Summary
+  summary:
+    name: 📊 Build Summary
+    runs-on: ubuntu-latest
+    needs: [test, train, test-app, security, docs, performance]
+    if: always()
+    
+    steps:
+    - name: 📊 Generate build summary
+      run: |
+        echo "# 🏠 House Purchase Predictor - Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## ✅ Build Status" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tests**: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Model Training**: ${{ needs.train.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **App Testing**: ${{ needs.test-app.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Security Scan**: ${{ needs.security.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Documentation**: ${{ needs.docs.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Performance**: ${{ needs.performance.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🚀 Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Review any failed checks above" >> $GITHUB_STEP_SUMMARY
+        echo "2. Fix any issues and push again" >> $GITHUB_STEP_SUMMARY
+        echo "3. Deploy to production when ready" >> $GITHUB_STEP_SUMMARY
