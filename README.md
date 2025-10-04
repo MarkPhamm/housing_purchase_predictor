@@ -5,7 +5,7 @@ A comprehensive machine learning project to predict whether customers will purch
 ## Project Structure
 
 ```
-ml_project_template/
+housing_purchase_predictor/
 ├── data/                           # Data directory
 │   └── global_house_purchase_dataset.csv
 ├── src/                            # Source code
