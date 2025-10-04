@@ -16,12 +16,29 @@ house_purchase_predictor/
 │   └── quick_demo.py               # Quick demo script
 ├── app/                            # Streamlit web application
 │   ├── streamlit_app.py            # Main Streamlit app
-│   └── README.md                   # App documentation
+│   ├── README.md                   # App documentation
+│   └── TROUBLESHOOTING.md          # App troubleshooting guide
 ├── models/                         # Saved models and artifacts
 ├── notebooks/                      # Jupyter notebooks for EDA
 │   └── eda.ipynb
 ├── tests/                          # Unit tests
 │   └── test.py
+├── guides/                         # User guides and documentation
+│   ├── APP_GUIDE.md                # Complete Streamlit app guide
+│   ├── USAGE_GUIDE.md              # Detailed usage instructions
+│   ├── QUICKSTART.md               # Quick start guide
+│   └── QUICK_REFERENCE.md          # Quick reference card
+├── docs/                           # Project documentation
+│   ├── PROJECT_SUMMARY.md          # High-level project overview
+│   ├── FINAL_OVERVIEW.md           # Quick reference guide
+│   ├── FIXES_APPLIED.md            # Bug fixes and solutions
+│   ├── CI_CD_GUIDE.md              # CI/CD pipeline documentation
+│   ├── CI_CD_SUMMARY.md            # CI/CD implementation summary
+│   ├── CI_CD_FIXES.md              # CI/CD fixes applied
+│   └── CI_CD_FINAL_SUMMARY.md      # Final CI/CD summary
+├── .github/                        # GitHub Actions and templates
+│   ├── workflows/                  # CI/CD workflows
+│   └── ISSUE_TEMPLATE/             # Issue and PR templates
 ├── requirements.txt                # Python dependencies
 ├── run_app.sh                      # Launch script (Mac/Linux)
 ├── run_app.bat                     # Launch script (Windows)
@@ -255,6 +272,32 @@ The dataset includes:
 ## License
 
 See LICENSE file for details.
+
+## 📚 Documentation
+
+### **📖 Main Documentation**
+
+- **[README.md](README.md)** - This file (main documentation)
+
+### **📋 User Guides** (`guides/`)
+
+- **[APP_GUIDE.md](guides/APP_GUIDE.md)** - Complete Streamlit app guide
+- **[USAGE_GUIDE.md](guides/USAGE_GUIDE.md)** - Detailed usage instructions
+- **[QUICKSTART.md](guides/QUICKSTART.md)** - Quick start guide
+- **[QUICK_REFERENCE.md](guides/QUICK_REFERENCE.md)** - Quick reference card
+
+### **📊 Project Documentation** (`docs/`)
+
+- **[PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md)** - High-level project overview
+- **[FINAL_OVERVIEW.md](docs/FINAL_OVERVIEW.md)** - Quick reference guide
+- **[FIXES_APPLIED.md](docs/FIXES_APPLIED.md)** - Bug fixes and solutions
+
+### **🚀 CI/CD Documentation** (`docs/`)
+
+- **[CI_CD_GUIDE.md](docs/CI_CD_GUIDE.md)** - CI/CD pipeline documentation
+- **[CI_CD_SUMMARY.md](docs/CI_CD_SUMMARY.md)** - CI/CD implementation summary
+- **[CI_CD_FIXES.md](docs/CI_CD_FIXES.md)** - CI/CD fixes applied
+- **[CI_CD_FINAL_SUMMARY.md](docs/CI_CD_FINAL_SUMMARY.md)** - Final CI/CD summary
 
 ## Contributing
 
