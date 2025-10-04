@@ -99,11 +99,25 @@ class HousePurchasePredictor:
         # Engineer features
         df = self.engineer_features(df)
         
-        # Encode categorical features
+        # Encode categorical features with unknown category handling
         categorical_cols = ['country', 'city', 'property_type', 'furnishing_status']
         for col in categorical_cols:
             if col in df.columns:
-                df[col] = self.encoders[col].transform(df[col].astype(str))
+                # Get the encoder for this column
+                encoder = self.encoders[col]
+                
+                # Handle unknown categories by mapping them to the most common class
+                known_classes = set(encoder.classes_)
+                df[col] = df[col].astype(str)
+                
+                # Replace unknown categories with the first known class
+                mask = ~df[col].isin(known_classes)
+                if mask.any():
+                    logger.warning(f"Found {mask.sum()} unknown categories in '{col}'. Mapping to '{encoder.classes_[0]}'")
+                    df.loc[mask, col] = encoder.classes_[0]
+                
+                # Now transform
+                df[col] = encoder.transform(df[col])
         
         # Drop property_id if present
         if 'property_id' in df.columns:

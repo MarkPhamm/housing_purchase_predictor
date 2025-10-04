@@ -5,20 +5,26 @@ A comprehensive machine learning project to predict whether customers will purch
 ## Project Structure
 
 ```
-housing_purchase_predictor/
+house_purchase_predictor/
 ├── data/                           # Data directory
 │   └── global_house_purchase_dataset.csv
 ├── src/                            # Source code
 │   ├── data_preprocessing.py       # Data preprocessing and feature engineering
 │   ├── model_training.py           # Model training and evaluation
 │   ├── main_pipeline.py            # Main orchestration pipeline
-│   └── predict.py                  # Prediction module for new data
+│   ├── predict.py                  # Prediction module for new data
+│   └── quick_demo.py               # Quick demo script
+├── app/                            # Streamlit web application
+│   ├── streamlit_app.py            # Main Streamlit app
+│   └── README.md                   # App documentation
 ├── models/                         # Saved models and artifacts
 ├── notebooks/                      # Jupyter notebooks for EDA
 │   └── eda.ipynb
 ├── tests/                          # Unit tests
 │   └── test.py
 ├── requirements.txt                # Python dependencies
+├── run_app.sh                      # Launch script (Mac/Linux)
+├── run_app.bat                     # Launch script (Windows)
 └── README.md                       # This file
 ```
 
@@ -74,6 +80,33 @@ housing_purchase_predictor/
 ✅ Logging throughout the pipeline  
 ✅ Modular code structure  
 ✅ Separate prediction module for deployment  
+
+## 🎨 Interactive Web App
+
+We've included a beautiful **Streamlit web application** for easy predictions!
+
+### Quick Start - Web App
+
+```bash
+# Launch the app (easiest way)
+./run_app.sh          # Mac/Linux
+# or
+run_app.bat           # Windows
+
+# Or run directly
+streamlit run app/streamlit_app.py
+```
+
+The app opens at `http://localhost:8501` with:
+
+- ✨ **Single Prediction**: Interactive form with instant results
+- 📊 **Batch Prediction**: Upload CSV, get predictions for all
+- 📈 **Visualizations**: Gauge charts, probability scores, insights
+- 💡 **Risk Assessment**: Affordability, loan ratios, risk factors
+
+See `app/README.md` for detailed documentation.
+
+---
 
 ## Installation
 
