@@ -1,0 +1,33 @@
+
+======================================================================
+HOUSE PURCHASE PREDICTION - MODEL PERFORMANCE REPORT
+======================================================================
+
+VALIDATION SET RESULTS (All Models):
+----------------------------------------------------------------------
+            model_name  accuracy  precision   recall  f1_score  roc_auc
+         Random Forest  1.000000   1.000000 1.000000  1.000000 1.000000
+     Gradient Boosting  1.000000   1.000000 1.000000  1.000000 1.000000
+Support Vector Machine  0.986567   0.980789 0.960492  0.970534 0.998771
+   Logistic Regression  0.942235   0.866799 0.885239  0.875922 0.985918
+   K-Nearest Neighbors  0.931069   0.894428 0.794501  0.841508 0.979762
+           Naive Bayes  0.739409   0.469124 0.998263  0.638290 0.989278
+
+BEST MODEL: Random Forest
+----------------------------------------------------------------------
+Selected based on F1 Score
+
+TEST SET PERFORMANCE (Best Model):
+----------------------------------------------------------------------
+Accuracy:  1.0000
+Precision: 1.0000
+Recall:    1.0000
+F1 Score:  1.0000
+ROC AUC:   1.0000
+
+Confusion Matrix:
+              Predicted No    Predicted Yes
+Actual No            23090                0
+Actual Yes               0             6910
+
+======================================================================
