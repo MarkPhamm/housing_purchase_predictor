@@ -1,4 +1,5 @@
 # House Purchase Prediction ML Project
+<img width="1035" height="690" alt="image" src="https://github.com/user-attachments/assets/6a622b03-9761-4d32-b226-6e2bd48aac99" />
 
 A comprehensive machine learning project to predict whether customers will purchase a house based on property characteristics and customer financial information.
 
