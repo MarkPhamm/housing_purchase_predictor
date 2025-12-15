@@ -213,7 +213,7 @@ jobs:
         pip install -r requirements.txt
         
     - name: 📥 Download model artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: trained-models
         path: models/
@@ -336,7 +336,7 @@ jobs:
         pip install -r requirements.txt
         
     - name: 📥 Download model artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: trained-models
         path: models/
