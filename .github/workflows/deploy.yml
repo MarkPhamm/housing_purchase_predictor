@@ -61,7 +61,7 @@ jobs:
         echo "- Mobile-responsive design" >> DEPLOYMENT.md
         
     - name: 📤 Upload deployment artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: deployment-package
         path: |
